@@ -1,0 +1,32 @@
+info:
+  name: POST Country
+  type: http
+  seq: 1
+
+http:
+  method: post
+  url: http://localhost:3000/api/countries
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "name": "United States",
+        "flag": "🇺🇸",
+        "code": "US",
+        "cities": [
+          "New York",
+          "Los Angeles",
+          "Miami"
+        ],
+        "description": "Access to all major US retailers and e-commerce platforms"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: false
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

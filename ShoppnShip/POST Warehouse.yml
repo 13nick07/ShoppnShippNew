@@ -1,0 +1,30 @@
+info:
+  name: POST Warehouse
+  type: http
+  seq: 6
+
+http:
+  method: post
+  url: http://localhost:3000/api/warehouses
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "warehouseCode": "1",
+        "name": "South India Main Warehouse",
+        "countryCode": "IN",
+        "country": "INDIA",
+        "city": "Bangalore",
+        "addressLine": "ITPL, Hoodi",
+        "postalCode": "176055"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: false
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

@@ -50,6 +50,10 @@ const ChartStyle = ({
   id,
   config
 }) => {
+  if (!config) {
+    return null
+  }
+
   const colorConfig = Object.entries(config).filter(([, config]) => config.theme || config.color)
 
   if (!colorConfig.length) {
