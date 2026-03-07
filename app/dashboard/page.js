@@ -24,6 +24,7 @@ import {
   Box,
 } from 'lucide-react';
 
+
 export default function DashboardPage() {
   const router = useRouter();
   const { toast } = useToast();
@@ -35,7 +36,15 @@ export default function DashboardPage() {
   const [countries, setCountries] = useState([]);
   const [calcLoading, setCalcLoading] = useState(false);
   const [shippingRates, setShippingRates] = useState([]);
-  
+
+  const [warehouses, setWarehouses] = useState([]);
+  const [virtualAddressCount, setVirtualAddressCount] = useState(0);
+
+
+  const [selectedCountry, setSelectedCountry] = useState("");
+  const [selectedCity, setSelectedCity] = useState("");
+  const [selectedWarehouse, setSelectedWarehouse] = useState("");
+
   const [calculator, setCalculator] = useState({
     from: '',
     to: '',
@@ -43,42 +52,54 @@ export default function DashboardPage() {
   });
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
     const userData = localStorage.getItem('user');
-    
-    if (!token || !userData) {
+
+    if (!userData) {
       router.push('/login');
       return;
     }
 
-    setUser(JSON.parse(userData));
-    loadDashboardData(token);
+    const parsedUser = JSON.parse(userData);
+    setUser(parsedUser);
+
+    loadDashboardData(parsedUser);
   }, []);
 
-  const loadDashboardData = async (token) => {
+  useEffect(() => {
+    setVirtualAddressCount(addresses.length);
+    console.log("Virtual Address Count:", addresses.length);
+  }, [addresses]);
+
+  const loadDashboardData = async (user) => {
     try {
-      const headers = { 'Authorization': `Bearer ${token}` };
-      
-      const [addressesRes, packagesRes, shipmentsRes, countriesRes] = await Promise.all([
-        fetch('/api/addresses', { headers }),
-        fetch('/api/packages', { headers }),
-        fetch('/api/shipments', { headers }),
-        fetch('/api/countries', { headers }),
-      ]);
+      const [addressesRes, packagesRes, shipmentsRes, countriesRes, warehousesRes] =
+        await Promise.all([
+          fetch('/api/addresses', {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ userId: user.id }),
+          }),
+          fetch('/api/packages'),
+          fetch('/api/shipments'),
+          fetch('/api/countries'),
+          fetch('/api/warehouses'),
+        ]);
 
-      const [addressesData, packagesData, shipmentsData, countriesData] = await Promise.all([
-        addressesRes.json(),
-        packagesRes.json(),
-        shipmentsRes.json(),
-        countriesRes.json(),
-      ]);
+      const [addressesData, packagesData, shipmentsData, countriesData, warehousesData] =
+        await Promise.all([
+          addressesRes.json(),
+          packagesRes.json(),
+          shipmentsRes.json(),
+          countriesRes.json(),
+          warehousesRes.json(),
+        ]);
 
-      setAddresses(addressesData.addresses || []);
+      setAddresses(addressesData.data || []);
       setPackages(packagesData.packages || []);
       setShipments(shipmentsData.shipments || []);
-      setCountries(countriesData.countries || []);
+      setCountries(countriesData.data || []);
+      setWarehouses(warehousesData.data || []);
     } catch (error) {
-      console.error('Error loading dashboard:', error);
       toast({
         title: 'Error',
         description: 'Failed to load dashboard data',
@@ -86,6 +107,54 @@ export default function DashboardPage() {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const selectedCountryData = countries.find(
+    (c) => c.code === selectedCountry
+  );
+
+  const filteredWarehouses = warehouses.filter(
+    (w) =>
+      w.countryCode === selectedCountry &&
+      w.city === selectedCity
+  );
+
+  const handleCreateVirtualAddress = async () => {
+    try {
+      const response = await fetch("/api/addresses", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          warehouseId: selectedWarehouse,
+          userId: user.id,
+          userEmail: user.email,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) throw new Error(data.message);
+
+      toast({
+        title: "Success",
+        description: "Virtual address created successfully",
+      });
+
+      loadDashboardData(user);
+
+      setSelectedCountry("");
+      setSelectedCity("");
+      setSelectedWarehouse("");
+
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
     }
   };
 
@@ -105,9 +174,9 @@ export default function DashboardPage() {
         `/api/shipping/calculate?from=${calculator.from}&to=${calculator.to}&weight=${calculator.weight}`
       );
       const data = await response.json();
-      
+
       if (!response.ok) throw new Error(data.error);
-      
+
       setShippingRates(data.rates || []);
     } catch (error) {
       toast({
@@ -156,12 +225,20 @@ export default function DashboardPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground">Virtual Addresses</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">{addresses.length}</div>
+            <motion.div
+              className="text-3xl font-bold"
+              initial={{ count: 0 }}
+              animate={{ count: virtualAddressCount }}
+              transition={{ duration: 0.5 }}
+            >
+              {virtualAddressCount}
+            </motion.div>
           </CardContent>
         </Card>
         <Card>
@@ -200,6 +277,96 @@ export default function DashboardPage() {
 
         {/* Addresses Tab */}
         <TabsContent value="addresses" className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8 items-end">
+
+            {/* Country */}
+            <div className="space-y-2">
+              <Label>Country</Label>
+              <Select
+                value={selectedCountry}
+                onValueChange={(val) => {
+                  setSelectedCountry(val);
+                  setSelectedCity("");
+                  setSelectedWarehouse("");
+                }}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select country" />
+                </SelectTrigger>
+                <SelectContent>
+                  {countries.map((country) => (
+                    <SelectItem key={country.code} value={country.code}>
+                      {country.flag} {country.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* City */}
+            <div className="space-y-2">
+              <Label>City</Label>
+              <Select
+                value={selectedCity}
+                onValueChange={(val) => {
+                  setSelectedCity(val);
+                  setSelectedWarehouse("");
+                }}
+                disabled={!selectedCountry}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select city" />
+                </SelectTrigger>
+                <SelectContent>
+                  {selectedCountryData?.cities?.map((city) => (
+                    <SelectItem key={city} value={city}>
+                      {city}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Warehouse */}
+            <div className="space-y-2">
+              <Label>Warehouse</Label>
+              <Select
+                value={selectedWarehouse}
+                onValueChange={(val) => setSelectedWarehouse(val)}
+                disabled={!selectedCity}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select warehouse" />
+                </SelectTrigger>
+                <SelectContent>
+                  {filteredWarehouses.length > 0 ? (
+                    filteredWarehouses.map((warehouse) => (
+                      <SelectItem key={warehouse._id} value={warehouse._id}>
+                        {warehouse.name}
+                      </SelectItem>
+                    ))
+                  ) : (
+                    <div className="px-3 py-2 text-sm text-muted-foreground">
+                      No warehouses found
+                    </div>
+                  )}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Button */}
+            <div>
+              <Button
+                className="w-full"
+                onClick={handleCreateVirtualAddress}
+                disabled={!selectedWarehouse} // disabled if warehouse not selected
+              >
+                Get Virtual Address
+              </Button>
+            </div>
+
+          </div>
+
           <Card>
             <CardHeader>
               <CardTitle>Virtual Addresses</CardTitle>
@@ -347,7 +514,7 @@ export default function DashboardPage() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="space-y-2">
                   <Label>From Country</Label>
-                  <Select value={calculator.from} onValueChange={(val) => setCalculator({...calculator, from: val})}>
+                  <Select value={calculator.from} onValueChange={(val) => setCalculator({ ...calculator, from: val })}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select country" />
                     </SelectTrigger>
@@ -363,7 +530,7 @@ export default function DashboardPage() {
 
                 <div className="space-y-2">
                   <Label>To Country</Label>
-                  <Select value={calculator.to} onValueChange={(val) => setCalculator({...calculator, to: val})}>
+                  <Select value={calculator.to} onValueChange={(val) => setCalculator({ ...calculator, to: val })}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select country" />
                     </SelectTrigger>
@@ -384,7 +551,7 @@ export default function DashboardPage() {
                     step="0.1"
                     min="0.1"
                     value={calculator.weight}
-                    onChange={(e) => setCalculator({...calculator, weight: e.target.value})}
+                    onChange={(e) => setCalculator({ ...calculator, weight: e.target.value })}
                   />
                 </div>
               </div>
