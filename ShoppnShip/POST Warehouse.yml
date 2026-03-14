@@ -14,12 +14,12 @@ http:
     data: |-
       {
         "warehouseCode": "1",
-        "name": "South India Main Warehouse",
+        "name": "Ludhiana Main Warehouse",
         "countryCode": "IN",
         "country": "INDIA",
-        "city": "Bangalore",
-        "addressLine": "ITPL, Hoodi",
-        "postalCode": "176055"
+        "city": "Ludhiana",
+        "addressLine": "ABCD, Makhan Chowk, Ludhiana",
+        "postalCode": "176009"
       }
   auth: inherit
 
