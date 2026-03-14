@@ -5,13 +5,13 @@ info:
 
 http:
   method: put
-  url: http://localhost:3000/api/countries/69a3faa4184dd5b4a388472c
+  url: http://localhost:3000/api/countries/69a3fbb0184dd5b4a388472d
   headers:
     - name: Content-Type
       value: application/json
   body:
     type: json
-    data: '{"flag": "🇦🇪","code": "AE" }'
+    data: '{"cities": ["Ludhiana","Chandigarh","Ambala"] }'
   auth: inherit
 
 settings:
