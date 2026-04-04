@@ -52,32 +52,49 @@ export default function DashboardPage() {
   });
 
   useEffect(() => {
-    const userData = localStorage.getItem('user');
+  async function checkAuth() {
+    try {
+      const res = await fetch('/api/auth/me', {
+        credentials: 'include',
+      });
 
-    if (!userData) {
+      if (!res.ok) {
+        router.push('/login');
+        return;
+      }
+
+      const data = await res.json();
+      setUser(data.user);
+      console.log("Authenticated user:", data.user);
+      //loadDashboardData();
+
+    } catch {
       router.push('/login');
-      return;
     }
+  }
 
-    const parsedUser = JSON.parse(userData);
-    setUser(parsedUser);
+  checkAuth();
+}, []);
 
-    loadDashboardData(parsedUser);
-  }, []);
+useEffect(() => {
+  if (user) {
+    loadDashboardData(); // now user is guaranteed to exist
+  }
+}, [user]);
 
   useEffect(() => {
     setVirtualAddressCount(addresses.length);
     console.log("Virtual Address Count:", addresses.length);
   }, [addresses]);
 
-  const loadDashboardData = async (user) => {
+  const loadDashboardData = async () => {
     try {
       const [addressesRes, packagesRes, shipmentsRes, countriesRes, warehousesRes] =
         await Promise.all([
           fetch('/api/addresses', {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ userId: user.id }),
+            body: JSON.stringify({ userId: user.userId })
           }),
           fetch('/api/packages'),
           fetch('/api/shipments'),
@@ -100,6 +117,7 @@ export default function DashboardPage() {
       setCountries(countriesData.data || []);
       setWarehouses(warehousesData.data || []);
     } catch (error) {
+      console.error('Error loading dashboard data:', error);
       toast({
         title: 'Error',
         description: 'Failed to load dashboard data',
@@ -129,7 +147,7 @@ export default function DashboardPage() {
         },
         body: JSON.stringify({
           warehouseId: selectedWarehouse,
-          userId: user.id,
+          userId: user.userId,
           userEmail: user.email,
         }),
       });

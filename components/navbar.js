@@ -21,16 +21,35 @@ export default function Navbar() {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    const userData = localStorage.getItem('user');
-    if (token && userData) {
-      setUser(JSON.parse(userData));
+    async function fetchUser() {
+      try {
+        const res = await fetch('/api/auth/me', {
+          credentials: 'include', // send cookies
+        });
+
+        if (!res.ok) {
+          setUser(null);
+          return;
+        }
+
+        const data = await res.json();
+        setUser(data.user);
+      } catch (err) {
+        console.error(err);
+        setUser(null);
+      }
     }
+
+    fetchUser();
   }, [pathname]);
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+
+
+  const handleLogout = async () => {
+    await fetch('/api/auth/logout', {
+      method: 'POST',
+      credentials: 'include',
+    });
     setUser(null);
     router.push('/');
   };

@@ -1,19 +1,25 @@
 import { NextResponse } from "next/server";
 import { getCollection } from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
+import { verifyTokenAndUser } from "@/lib/auth";
 
 export async function POST(req) {
   try {
+    const token = req.cookies.get("token")?.value;
+
+    if (!token) {
+      return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
+    }
+    
+    const user = verifyTokenAndUser(token); // decode JWT → returns { id, email, role }
+
+    if (!user) {
+      return NextResponse.json({ success: false, message: "Invalid token" }, { status: 401 });
+    }
+
     const body = await req.json();
 
     const { userId, userEmail, warehouseId } = body;
-
-    if (!userId) {
-      return NextResponse.json(
-        { success: false, message: "User ID required" },
-        { status: 400 }
-      );
-    }
 
     const addressesCollection = await getCollection("addresses");
 
@@ -35,8 +41,8 @@ export async function POST(req) {
       const userCode = Math.random().toString(36).substring(2, 8).toUpperCase();
 
       const virtualAddress = {
-        userId,
-        userEmail,
+        userId: user.userId,
+        userEmail: user.email,
         warehouseId: warehouse._id,
         warehouse: {
           country: warehouse.country,
