@@ -12,6 +12,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import {
+  HoverCard,
+  HoverCardTrigger,
+  HoverCardContent,
+} from "@/components/ui/hover-card";
 import {
   Package,
   MapPin,
@@ -36,6 +42,7 @@ export default function DashboardPage() {
   const [countries, setCountries] = useState([]);
   const [calcLoading, setCalcLoading] = useState(false);
   const [shippingRates, setShippingRates] = useState([]);
+  const [bookingType, setBookingType] = useState("LOCKER");
 
   const [warehouses, setWarehouses] = useState([]);
   const [virtualAddressCount, setVirtualAddressCount] = useState(0);
@@ -92,9 +99,8 @@ useEffect(() => {
       const [addressesRes, packagesRes, shipmentsRes, countriesRes, warehousesRes] =
         await Promise.all([
           fetch('/api/addresses', {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ userId: user.userId })
+            method: "GET",
+            credentials: "include",
           }),
           fetch('/api/packages'),
           fetch('/api/shipments'),
@@ -147,8 +153,7 @@ useEffect(() => {
         },
         body: JSON.stringify({
           warehouseId: selectedWarehouse,
-          userId: user.userId,
-          userEmail: user.email,
+          bookingType
         }),
       });
 
@@ -295,7 +300,7 @@ useEffect(() => {
 
         {/* Addresses Tab */}
         <TabsContent value="addresses" className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8 items-end">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8 items-end">
 
             {/* Country */}
             <div className="space-y-2">
@@ -372,12 +377,72 @@ useEffect(() => {
               </Select>
             </div>
 
+            <div className="space-y-2">
+              <Label>Storage Type</Label>
+
+              <RadioGroup
+                value={bookingType}
+                onValueChange={(val) => setBookingType(val)}
+                className="flex flex-col gap-3"
+              >
+
+                {/* 🔹 LOCKER */}
+                <HoverCard>
+                  <HoverCardTrigger asChild>
+                    <div className="flex items-center space-x-2 cursor-pointer">
+                      <RadioGroupItem value="LOCKER" id="locker" />
+                      <Label htmlFor="locker">Locker</Label>
+                    </div>
+                  </HoverCardTrigger>
+
+                  <HoverCardContent className="w-64">
+                    <div className="space-y-2">
+                      <img
+                        src="/images/locker.svg"
+                        alt="Locker"
+                        className="rounded-md border"
+                      />
+                      <p className="text-sm font-medium">Locker Dimensions</p>
+                      <p className="text-xs text-muted-foreground">
+                        40cm × 40cm × 60cm
+                      </p>
+                    </div>
+                  </HoverCardContent>
+                </HoverCard>
+
+                {/* 🔹 SHELF */}
+                <HoverCard>
+                  <HoverCardTrigger asChild>
+                    <div className="flex items-center space-x-2 cursor-pointer">
+                      <RadioGroupItem value="SHELF" id="shelf" />
+                      <Label htmlFor="shelf">Shelf</Label>
+                    </div>
+                  </HoverCardTrigger>
+
+                  <HoverCardContent className="w-64">
+                    <div className="space-y-2">
+                      <img
+                        src="/images/shelf.svg"
+                        alt="Shelf"
+                        className="rounded-md border"
+                      />
+                      <p className="text-sm font-medium">Shelf Dimensions</p>
+                      <p className="text-xs text-muted-foreground">
+                        120cm × 80cm × 200cm
+                      </p>
+                    </div>
+                  </HoverCardContent>
+                </HoverCard>
+
+              </RadioGroup>
+            </div>
+
             {/* Button */}
-            <div>
+            <div className="space-y-2">
               <Button
                 className="w-full"
                 onClick={handleCreateVirtualAddress}
-                disabled={!selectedWarehouse} // disabled if warehouse not selected
+                disabled={!selectedWarehouse || !bookingType} // disabled if warehouse not selected
               >
                 Get Virtual Address
               </Button>

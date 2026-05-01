@@ -1,0 +1,30 @@
+info:
+  name: POST Warehouse Structure
+  type: http
+  seq: 10
+
+http:
+  method: post
+  url: http://localhost:3000/api/warehouses
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "warehouseCode": "1",
+        "name": "Ludhiana Main Warehouse",
+        "countryCode": "IN",
+        "country": "INDIA",
+        "city": "Ludhiana",
+        "addressLine": "ABCD, Makhan Chowk, Ludhiana",
+        "postalCode": "176009"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: false
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

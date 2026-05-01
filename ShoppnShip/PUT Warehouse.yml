@@ -1,0 +1,31 @@
+info:
+  name: PUT Warehouse
+  type: http
+  seq: 8
+
+http:
+  method: PUT
+  url: http://localhost:3000/api/warehouses/69a489cc87f4a7ea9771ad89
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+            "warehouseCode": "LB",
+            "name": "Chandigarh Main Warehouse",
+            "countryCode": "IN",
+            "country": "INDIA",
+            "city": "Chandigarh",
+            "addressLine": "Warehouse District, Chandigarh Industrial City",
+            "postalCode": "00055",
+            "isActive": true
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: false
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
