@@ -53,9 +53,6 @@ export default function RegisterPage() {
         throw new Error(data.error || 'Registration failed');
       }
 
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(data.user));
-
       toast({
         title: 'Account created',
         description: 'Your account has been created successfully!',

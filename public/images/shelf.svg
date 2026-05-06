@@ -1,0 +1,17 @@
+<svg width="260" height="180" viewBox="0 0 260 180" xmlns="http://www.w3.org/2000/svg">
+  <!-- Rectangle -->
+  <rect x="40" y="30" width="160" height="100" fill="#E5E7EB" stroke="#374151" stroke-width="2"/>
+
+  <!-- Width -->
+  <line x1="40" y1="150" x2="200" y2="150" stroke="#374151" stroke-width="2"/>
+  <text x="120" y="165" text-anchor="middle" font-size="12" fill="#374151">120 cm</text>
+
+  <!-- Height -->
+  <line x1="210" y1="30" x2="210" y2="130" stroke="#374151" stroke-width="2"/>
+  <text x="215" y="85" font-size="12" fill="#374151">200 cm</text>
+
+  <!-- Depth label -->
+  <text x="120" y="20" text-anchor="middle" font-size="12" fill="#374151">
+    Depth: 80 cm
+  </text>
+</svg>

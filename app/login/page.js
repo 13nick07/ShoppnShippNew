@@ -28,7 +28,8 @@ export default function LoginPage() {
       const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        credentials: "include",
+        body: JSON.stringify(formData)
       });
 
       const data = await response.json();
@@ -36,9 +37,6 @@ export default function LoginPage() {
       if (!response.ok) {
         throw new Error(data.error || 'Login failed');
       }
-
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(data.user));
 
       toast({
         title: 'Login successful',
