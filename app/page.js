@@ -10,12 +10,9 @@ import {
   Package,
   Truck,
   Shield,
-  MapPin,
   DollarSign,
   CheckCircle,
   ArrowRight,
-  Box,
-  Boxes,
   Clock,
 } from 'lucide-react';
 
@@ -37,8 +34,8 @@ export default function Home() {
   const features = [
     {
       icon: Globe,
-      title: 'Global Addresses',
-      description: 'Get virtual addresses in 7+ countries including USA, UK, UAE, and more.'
+      title: 'Indian Address',
+      description: 'Get a virtual address in India to receive your packages safely and conveniently.'
     },
     {
       icon: Package,
@@ -48,12 +45,12 @@ export default function Home() {
     {
       icon: Truck,
       title: 'Worldwide Shipping',
-      description: 'Ship from anywhere to anywhere with DHL, FedEx, UPS, and Aramex.'
+      description: 'Ship from India to anywhere in the world with DHL, FedEx, UPS, and Aramex.'
     },
     {
       icon: Shield,
       title: 'Secure Storage',
-      description: 'Free storage for up to 90 days with package protection and insurance.'
+      description: 'Free storage for up to 30 days with package protection and insurance.'
     },
     {
       icon: DollarSign,
@@ -71,12 +68,12 @@ export default function Home() {
     {
       number: '01',
       title: 'Get Virtual Address',
-      description: 'Sign up and receive virtual addresses in multiple countries instantly.'
+      description: 'Sign up and receive virtual addresses in India instantly.'
     },
     {
       number: '02',
       title: 'Shop Anywhere',
-      description: 'Use your virtual address to shop from any international store.'
+      description: 'Use your virtual address to shop from any Indian store.'
     },
     {
       number: '03',
@@ -90,29 +87,31 @@ export default function Home() {
     },
   ];
 
-  const countries = [
-    { name: 'United States', flag: '🇺🇸', code: 'USA' },
-    { name: 'United Kingdom', flag: '🇬🇧', code: 'UK' },
-    { name: 'India', flag: '🇮🇳', code: 'IND' },
-    { name: 'UAE', flag: '🇦🇪', code: 'UAE' },
-    { name: 'China', flag: '🇨🇳', code: 'CHN' },
-    { name: 'Germany', flag: '🇩🇪', code: 'GER' },
-    { name: 'Japan', flag: '🇯🇵', code: 'JPN' },
-  ];
-
   return (
     <div className="flex flex-col">
+
       {/* Hero Section */}
-      <section className="relative overflow-hidden">
-        <div 
-          className="absolute inset-0 bg-cover bg-center z-0"
+      <section className="relative overflow-hidden min-h-screen flex items-center">
+
+        {/* Background Image */}
+        <div
+          className="absolute inset-0 bg-cover bg-center scale-105 z-0"
           style={{
-            backgroundImage: 'url(https://images.unsplash.com/photo-1583857671904-a716bf4ee5d8?fm=jpg&q=60&w=3000&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Nnx8aW50ZXJuYXRpb25hbCUyMHNoaXBwaW5nfGVufDB8fDB8fHww)',
+            backgroundImage: "url('/images/logistics.png')",
           }}
         >
-          <div className="absolute inset-0 bg-gradient-to-r from-background via-background/95 to-background/80" />
+          {/* Multi-layer overlay for better text contrast */}
+          {/* Base dark layer */}
+          <div className="absolute inset-0 bg-black/55" />
+
+          {/* Strong left-to-right cinematic gradient */}
+          <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/70 to-black/30" />
+
+          {/* Bottom fade to ensure lower text is readable */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
         </div>
-        
+
+        {/* Hero Content */}
         <div className="container relative z-10 mx-auto px-4 py-24 md:py-32">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -120,41 +119,75 @@ export default function Home() {
             transition={{ duration: 0.8 }}
             className="max-w-3xl"
           >
-            <Badge className="mb-4" variant="secondary">
+            <Badge className="mb-6 bg-white/15 border border-white/30 text-white backdrop-blur-sm hover:bg-white/25 px-4 py-1.5">
               🌍 Global Shipping Platform
             </Badge>
-            <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight">
-              Shop from <span className="text-primary">ANY</span> country.
+
+            <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight text-white drop-shadow-lg">
+              Shop from{' '}
+              {/*
+                KEY FIX: Use a bright amber/orange accent instead of the dark primary color.
+                - text-amber-400 is vivid on dark backgrounds
+                - drop-shadow gives a subtle glow for extra legibility
+                - italic adds visual distinction to emphasize the words
+              */}
+              <span
+                className="italic text-amber-400"
+                style={{ textShadow: '0 0 30px rgba(251,191,36,0.5), 0 2px 8px rgba(0,0,0,0.8)' }}
+              >
+                INDIA
+              </span>
+              .
               <br />
-              Ship to <span className="text-primary">EVERY</span> country.
+              Ship to{' '}
+              <span
+                className="italic text-amber-400"
+                style={{ textShadow: '0 0 30px rgba(251,191,36,0.5), 0 2px 8px rgba(0,0,0,0.8)' }}
+              >
+                ANY
+              </span>{' '}
+              country.
             </h1>
-            <p className="text-xl text-muted-foreground mb-8 max-w-2xl">
-              Get virtual addresses worldwide, consolidate your packages, and ship internationally with the world's leading carriers.
+
+            <p className="text-lg md:text-xl text-gray-200 mb-8 max-w-2xl leading-relaxed drop-shadow-md">
+              Get a virtual address in India, consolidate your packages,
+              and ship internationally with the world's leading carriers.
             </p>
+
             <div className="flex flex-col sm:flex-row gap-4">
               <Link href="/register">
-                <Button size="lg" className="text-lg px-8">
+                <Button
+                  size="lg"
+                  className="text-lg px-8 shadow-lg shadow-primary/30 hover:shadow-primary/50 transition-shadow"
+                >
                   Get Started Free
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
               </Link>
+
               <Link href="/how-it-works">
-                <Button size="lg" variant="outline" className="text-lg px-8">
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="text-lg px-8 bg-white/10 border-white/40 text-white hover:bg-white hover:text-black backdrop-blur-sm transition-all"
+                >
                   How It Works
                 </Button>
               </Link>
             </div>
-            <div className="flex items-center gap-6 mt-8 text-sm text-muted-foreground">
+
+            {/* Trust badges */}
+            <div className="flex flex-wrap items-center gap-6 mt-10 text-sm text-gray-300">
               <div className="flex items-center gap-2">
-                <CheckCircle className="h-5 w-5 text-primary" />
+                <CheckCircle className="h-5 w-5 text-amber-400" />
                 No setup fees
               </div>
               <div className="flex items-center gap-2">
-                <CheckCircle className="h-5 w-5 text-primary" />
+                <CheckCircle className="h-5 w-5 text-amber-400" />
                 Free storage
               </div>
               <div className="flex items-center gap-2">
-                <CheckCircle className="h-5 w-5 text-primary" />
+                <CheckCircle className="h-5 w-5 text-amber-400" />
                 7+ countries
               </div>
             </div>
@@ -171,7 +204,9 @@ export default function Home() {
             viewport={{ once: true }}
             className="text-center mb-16"
           >
-            <h2 className="text-4xl font-bold mb-4">Why Choose Shoppnshipp?</h2>
+            <h2 className="text-4xl font-bold mb-4">
+              Why Choose Shoppnshipp?
+            </h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
               The only platform you need for global shopping and shipping
             </p>
@@ -245,51 +280,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Countries Section */}
-      <section className="py-20 bg-muted/30">
-        <div className="container mx-auto px-4">
-          <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            className="text-center mb-16"
-          >
-            <h2 className="text-4xl font-bold mb-4">Ship From & To 7+ Countries</h2>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Get virtual addresses in multiple countries and ship anywhere in the world
-            </p>
-          </motion.div>
-
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
-            {countries.map((country, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, scale: 0.9 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.05 }}
-              >
-                <Card className="text-center hover:shadow-lg transition-shadow cursor-pointer">
-                  <CardContent className="pt-6">
-                    <div className="text-5xl mb-3">{country.flag}</div>
-                    <p className="font-semibold text-sm">{country.code}</p>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
-
-          <div className="text-center mt-12">
-            <Link href="/countries">
-              <Button variant="outline" size="lg">
-                View All Countries
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </section>
-
       {/* CTA Section */}
       <section className="py-20">
         <div className="container mx-auto px-4">
@@ -299,7 +289,9 @@ export default function Home() {
             viewport={{ once: true }}
             className="bg-primary text-primary-foreground rounded-2xl p-12 md:p-16 text-center"
           >
-            <h2 className="text-4xl font-bold mb-4">Ready to Start Shipping Globally?</h2>
+            <h2 className="text-4xl font-bold mb-4">
+              Ready to Start Shipping Globally?
+            </h2>
             <p className="text-xl mb-8 opacity-90 max-w-2xl mx-auto">
               Join thousands of customers who trust Shoppnshipp for their international shipping needs.
             </p>

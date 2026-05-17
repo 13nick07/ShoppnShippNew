@@ -43,10 +43,10 @@ export default function DashboardPage() {
   const [calcLoading, setCalcLoading] = useState(false);
   const [shippingRates, setShippingRates] = useState([]);
   const [bookingType, setBookingType] = useState("LOCKER");
+  const [deletingId, setDeletingId] = useState(null); // placeholder, unused without backend
 
   const [warehouses, setWarehouses] = useState([]);
   const [virtualAddressCount, setVirtualAddressCount] = useState(0);
-
 
   const [selectedCountry, setSelectedCountry] = useState("");
   const [selectedCity, setSelectedCity] = useState("");
@@ -59,49 +59,32 @@ export default function DashboardPage() {
   });
 
   useEffect(() => {
-  async function checkAuth() {
-    try {
-      const res = await fetch('/api/auth/me', {
-        credentials: 'include',
-      });
-
-      if (!res.ok) {
+    async function checkAuth() {
+      try {
+        const res = await fetch('/api/auth/me', { credentials: 'include' });
+        if (!res.ok) { router.push('/login'); return; }
+        const data = await res.json();
+        setUser(data.user);
+      } catch {
         router.push('/login');
-        return;
       }
-
-      const data = await res.json();
-      setUser(data.user);
-      console.log("Authenticated user:", data.user);
-      //loadDashboardData();
-
-    } catch {
-      router.push('/login');
     }
-  }
+    checkAuth();
+  }, []);
 
-  checkAuth();
-}, []);
-
-useEffect(() => {
-  if (user) {
-    loadDashboardData(); // now user is guaranteed to exist
-  }
-}, [user]);
+  useEffect(() => {
+    if (user) loadDashboardData();
+  }, [user]);
 
   useEffect(() => {
     setVirtualAddressCount(addresses.length);
-    console.log("Virtual Address Count:", addresses.length);
   }, [addresses]);
 
   const loadDashboardData = async () => {
     try {
       const [addressesRes, packagesRes, shipmentsRes, countriesRes, warehousesRes] =
         await Promise.all([
-          fetch('/api/addresses', {
-            method: "GET",
-            credentials: "include",
-          }),
+          fetch('/api/addresses', { method: "GET", credentials: "include" }),
           fetch('/api/packages'),
           fetch('/api/shipments'),
           fetch('/api/countries'),
@@ -124,89 +107,54 @@ useEffect(() => {
       setWarehouses(warehousesData.data || []);
     } catch (error) {
       console.error('Error loading dashboard data:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to load dashboard data',
-        variant: 'destructive',
-      });
+      toast({ title: 'Error', description: 'Failed to load dashboard data', variant: 'destructive' });
     } finally {
       setLoading(false);
     }
   };
 
-  const selectedCountryData = countries.find(
-    (c) => c.code === selectedCountry
-  );
+  const selectedCountryData = countries.find((c) => c.code === selectedCountry);
 
   const filteredWarehouses = warehouses.filter(
-    (w) =>
-      w.countryCode === selectedCountry &&
-      w.city === selectedCity
+    (w) => w.countryCode === selectedCountry && w.city === selectedCity
   );
 
   const handleCreateVirtualAddress = async () => {
     try {
       const response = await fetch("/api/addresses", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          warehouseId: selectedWarehouse,
-          bookingType
-        }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ warehouseId: selectedWarehouse, bookingType }),
       });
 
       const data = await response.json();
-
       if (!response.ok) throw new Error(data.message);
 
-      toast({
-        title: "Success",
-        description: "Virtual address created successfully",
-      });
-
+      toast({ title: "Success", description: "Virtual address created successfully" });
       loadDashboardData(user);
-
       setSelectedCountry("");
       setSelectedCity("");
       setSelectedWarehouse("");
-
     } catch (error) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast({ title: "Error", description: error.message, variant: "destructive" });
     }
   };
 
   const calculateShipping = async () => {
     if (!calculator.from || !calculator.to || !calculator.weight) {
-      toast({
-        title: 'Missing information',
-        description: 'Please fill in all fields',
-        variant: 'destructive',
-      });
+      toast({ title: 'Missing information', description: 'Please fill in all fields', variant: 'destructive' });
       return;
     }
-
     setCalcLoading(true);
     try {
       const response = await fetch(
         `/api/shipping/calculate?from=${calculator.from}&to=${calculator.to}&weight=${calculator.weight}`
       );
       const data = await response.json();
-
       if (!response.ok) throw new Error(data.error);
-
       setShippingRates(data.rates || []);
     } catch (error) {
-      toast({
-        title: 'Error',
-        description: error.message,
-        variant: 'destructive',
-      });
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
     } finally {
       setCalcLoading(false);
     }
@@ -214,10 +162,7 @@ useEffect(() => {
 
   const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text);
-    toast({
-      title: 'Copied!',
-      description: 'Address copied to clipboard',
-    });
+    toast({ title: 'Copied!', description: 'Address copied to clipboard' });
   };
 
   const getStatusColor = (status) => {
@@ -248,18 +193,12 @@ useEffect(() => {
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground">Virtual Addresses</CardTitle>
           </CardHeader>
           <CardContent>
-            <motion.div
-              className="text-3xl font-bold"
-              initial={{ count: 0 }}
-              animate={{ count: virtualAddressCount }}
-              transition={{ duration: 0.5 }}
-            >
+            <motion.div className="text-3xl font-bold" initial={{ count: 0 }} animate={{ count: virtualAddressCount }} transition={{ duration: 0.5 }}>
               {virtualAddressCount}
             </motion.div>
           </CardContent>
@@ -305,22 +244,11 @@ useEffect(() => {
             {/* Country */}
             <div className="space-y-2">
               <Label>Country</Label>
-              <Select
-                value={selectedCountry}
-                onValueChange={(val) => {
-                  setSelectedCountry(val);
-                  setSelectedCity("");
-                  setSelectedWarehouse("");
-                }}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select country" />
-                </SelectTrigger>
+              <Select value={selectedCountry} onValueChange={(val) => { setSelectedCountry(val); setSelectedCity(""); setSelectedWarehouse(""); }}>
+                <SelectTrigger className="w-full"><SelectValue placeholder="Select country" /></SelectTrigger>
                 <SelectContent>
                   {countries.map((country) => (
-                    <SelectItem key={country.code} value={country.code}>
-                      {country.flag} {country.name}
-                    </SelectItem>
+                    <SelectItem key={country.code} value={country.code}>{country.flag} {country.name}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -329,22 +257,11 @@ useEffect(() => {
             {/* City */}
             <div className="space-y-2">
               <Label>City</Label>
-              <Select
-                value={selectedCity}
-                onValueChange={(val) => {
-                  setSelectedCity(val);
-                  setSelectedWarehouse("");
-                }}
-                disabled={!selectedCountry}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select city" />
-                </SelectTrigger>
+              <Select value={selectedCity} onValueChange={(val) => { setSelectedCity(val); setSelectedWarehouse(""); }} disabled={!selectedCountry}>
+                <SelectTrigger className="w-full"><SelectValue placeholder="Select city" /></SelectTrigger>
                 <SelectContent>
                   {selectedCountryData?.cities?.map((city) => (
-                    <SelectItem key={city} value={city}>
-                      {city}
-                    </SelectItem>
+                    <SelectItem key={city} value={city}>{city}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -353,40 +270,24 @@ useEffect(() => {
             {/* Warehouse */}
             <div className="space-y-2">
               <Label>Warehouse</Label>
-              <Select
-                value={selectedWarehouse}
-                onValueChange={(val) => setSelectedWarehouse(val)}
-                disabled={!selectedCity}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select warehouse" />
-                </SelectTrigger>
+              <Select value={selectedWarehouse} onValueChange={(val) => setSelectedWarehouse(val)} disabled={!selectedCity}>
+                <SelectTrigger className="w-full"><SelectValue placeholder="Select warehouse" /></SelectTrigger>
                 <SelectContent>
                   {filteredWarehouses.length > 0 ? (
                     filteredWarehouses.map((warehouse) => (
-                      <SelectItem key={warehouse._id} value={warehouse._id}>
-                        {warehouse.name}
-                      </SelectItem>
+                      <SelectItem key={warehouse._id} value={warehouse._id}>{warehouse.name}</SelectItem>
                     ))
                   ) : (
-                    <div className="px-3 py-2 text-sm text-muted-foreground">
-                      No warehouses found
-                    </div>
+                    <div className="px-3 py-2 text-sm text-muted-foreground">No warehouses found</div>
                   )}
                 </SelectContent>
               </Select>
             </div>
 
+            {/* Storage Type */}
             <div className="space-y-2">
               <Label>Storage Type</Label>
-
-              <RadioGroup
-                value={bookingType}
-                onValueChange={(val) => setBookingType(val)}
-                className="flex flex-col gap-3"
-              >
-
-                {/* 🔹 LOCKER */}
+              <RadioGroup value={bookingType} onValueChange={(val) => setBookingType(val)} className="flex flex-col gap-3">
                 <HoverCard>
                   <HoverCardTrigger asChild>
                     <div className="flex items-center space-x-2 cursor-pointer">
@@ -394,23 +295,15 @@ useEffect(() => {
                       <Label htmlFor="locker">Locker</Label>
                     </div>
                   </HoverCardTrigger>
-
                   <HoverCardContent className="w-64">
                     <div className="space-y-2">
-                      <img
-                        src="/images/locker.svg"
-                        alt="Locker"
-                        className="rounded-md border"
-                      />
+                      <img src="/images/locker.svg" alt="Locker" className="rounded-md border" />
                       <p className="text-sm font-medium">Locker Dimensions</p>
-                      <p className="text-xs text-muted-foreground">
-                        40cm × 40cm × 60cm
-                      </p>
+                      <p className="text-xs text-muted-foreground">40cm × 40cm × 60cm</p>
                     </div>
                   </HoverCardContent>
                 </HoverCard>
 
-                {/* 🔹 SHELF */}
                 <HoverCard>
                   <HoverCardTrigger asChild>
                     <div className="flex items-center space-x-2 cursor-pointer">
@@ -418,38 +311,26 @@ useEffect(() => {
                       <Label htmlFor="shelf">Shelf</Label>
                     </div>
                   </HoverCardTrigger>
-
                   <HoverCardContent className="w-64">
                     <div className="space-y-2">
-                      <img
-                        src="/images/shelf.svg"
-                        alt="Shelf"
-                        className="rounded-md border"
-                      />
+                      <img src="/images/shelf.svg" alt="Shelf" className="rounded-md border" />
                       <p className="text-sm font-medium">Shelf Dimensions</p>
-                      <p className="text-xs text-muted-foreground">
-                        120cm × 80cm × 200cm
-                      </p>
+                      <p className="text-xs text-muted-foreground">120cm × 80cm × 200cm</p>
                     </div>
                   </HoverCardContent>
                 </HoverCard>
-
               </RadioGroup>
             </div>
 
             {/* Button */}
             <div className="space-y-2">
-              <Button
-                className="w-full"
-                onClick={handleCreateVirtualAddress}
-                disabled={!selectedWarehouse || !bookingType} // disabled if warehouse not selected
-              >
+              <Button className="w-full" onClick={handleCreateVirtualAddress} disabled={!selectedWarehouse || !bookingType}>
                 Get Virtual Address
               </Button>
             </div>
-
           </div>
 
+          {/* Address List */}
           <Card>
             <CardHeader>
               <CardTitle>Virtual Addresses</CardTitle>
@@ -464,7 +345,7 @@ useEffect(() => {
               ) : (
                 <div className="space-y-4">
                   {addresses.map((address) => (
-                    <Card key={address.id}>
+                    <Card key={address._id}>
                       <CardContent className="pt-6">
                         <div className="flex justify-between items-start">
                           <div className="space-y-2">
@@ -479,13 +360,24 @@ useEffect(() => {
                               {address.warehouse?.city}, {address.warehouse?.country}
                             </p>
                           </div>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => copyToClipboard(address.addressLine)}
-                          >
-                            <Copy className="h-4 w-4" />
-                          </Button>
+
+                          {/* Action Buttons */}
+                          <div className="flex items-center gap-2">
+                            {/* Copy */}
+                            <Button size="sm" variant="outline" onClick={() => copyToClipboard(address.addressLine)}>
+                              <Copy className="h-4 w-4" />
+                            </Button>
+
+                            {/* X — remove from UI only */}
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-9 w-9 p-0 rounded-full text-gray-500 text-lg font-bold hover:text-destructive hover:bg-destructive/10 transition-colors"
+                              onClick={() => setAddresses((prev) => prev.filter((a) => a.id !== address._id))}
+                            >
+                              ✕
+                            </Button>
+                          </div>
                         </div>
                       </CardContent>
                     </Card>
@@ -563,9 +455,7 @@ useEffect(() => {
                               <Badge>{shipment.carrier}</Badge>
                               <span className="text-sm font-mono">{shipment.trackingNumber}</span>
                             </div>
-                            <p className="text-sm">
-                              {shipment.fromCountry} → {shipment.toCountry}
-                            </p>
+                            <p className="text-sm">{shipment.fromCountry} → {shipment.toCountry}</p>
                             <p className="text-sm text-muted-foreground">
                               Weight: {shipment.weight}kg | Cost: ${shipment.cost}
                             </p>
@@ -598,58 +488,36 @@ useEffect(() => {
                 <div className="space-y-2">
                   <Label>From Country</Label>
                   <Select value={calculator.from} onValueChange={(val) => setCalculator({ ...calculator, from: val })}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select country" />
-                    </SelectTrigger>
+                    <SelectTrigger><SelectValue placeholder="Select country" /></SelectTrigger>
                     <SelectContent>
                       {countries.map((country) => (
-                        <SelectItem key={country.code} value={country.code}>
-                          {country.flag} {country.name}
-                        </SelectItem>
+                        <SelectItem key={country.code} value={country.code}>{country.flag} {country.name}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
-
                 <div className="space-y-2">
                   <Label>To Country</Label>
                   <Select value={calculator.to} onValueChange={(val) => setCalculator({ ...calculator, to: val })}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select country" />
-                    </SelectTrigger>
+                    <SelectTrigger><SelectValue placeholder="Select country" /></SelectTrigger>
                     <SelectContent>
                       {countries.map((country) => (
-                        <SelectItem key={country.code} value={country.code}>
-                          {country.flag} {country.name}
-                        </SelectItem>
+                        <SelectItem key={country.code} value={country.code}>{country.flag} {country.name}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
-
                 <div className="space-y-2">
                   <Label>Weight (kg)</Label>
-                  <Input
-                    type="number"
-                    step="0.1"
-                    min="0.1"
-                    value={calculator.weight}
-                    onChange={(e) => setCalculator({ ...calculator, weight: e.target.value })}
-                  />
+                  <Input type="number" step="0.1" min="0.1" value={calculator.weight} onChange={(e) => setCalculator({ ...calculator, weight: e.target.value })} />
                 </div>
               </div>
 
               <Button onClick={calculateShipping} disabled={calcLoading} className="w-full">
                 {calcLoading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Calculating...
-                  </>
+                  <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Calculating...</>
                 ) : (
-                  <>
-                    <Calculator className="mr-2 h-4 w-4" />
-                    Calculate Rates
-                  </>
+                  <><Calculator className="mr-2 h-4 w-4" />Calculate Rates</>
                 )}
               </Button>
 
@@ -662,9 +530,7 @@ useEffect(() => {
                         <div className="flex justify-between items-center">
                           <div>
                             <p className="font-semibold">{rate.carrier}</p>
-                            <p className="text-sm text-muted-foreground">
-                              Estimated: {rate.estimatedDays} days
-                            </p>
+                            <p className="text-sm text-muted-foreground">Estimated: {rate.estimatedDays} days</p>
                           </div>
                           <div className="text-right">
                             <p className="text-2xl font-bold">${rate.cost}</p>
