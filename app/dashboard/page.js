@@ -165,6 +165,45 @@ export default function DashboardPage() {
     toast({ title: 'Copied!', description: 'Address copied to clipboard' });
   };
 
+  const handleDeleteAddress = async (addressId) => {
+    try {
+      setDeletingId(addressId);
+
+      const response = await fetch("/api/addresses", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          addressId,
+        }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to delete address");
+      }
+
+      // Remove from UI
+      setAddresses((prev) =>
+        prev.filter((a) => String(a._id) !== String(addressId))
+      );
+
+      toast({
+        title: "Success",
+        description: "Virtual address deleted successfully",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
   const getStatusColor = (status) => {
     switch (status) {
       case 'received': return 'bg-blue-500';
@@ -372,10 +411,15 @@ export default function DashboardPage() {
                             <Button
                               size="sm"
                               variant="ghost"
+                              disabled={deletingId === address._id}
                               className="h-9 w-9 p-0 rounded-full text-gray-500 text-lg font-bold hover:text-destructive hover:bg-destructive/10 transition-colors"
-                              onClick={() => setAddresses((prev) => prev.filter((a) => a.id !== address._id))}
+                              onClick={() => handleDeleteAddress(address._id)}
                             >
-                              ✕
+                              {deletingId === address._id ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                "✕"
+                              )}
                             </Button>
                           </div>
                         </div>
