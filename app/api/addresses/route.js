@@ -24,6 +24,14 @@ export async function POST(req) {
     const lockers = await getCollection("lockers");
     const addresses = await getCollection("addresses");
 
+    const existingAddress = await addresses.findOne({ userId: user.userId });
+    if (existingAddress) {
+      return NextResponse.json(
+        { success: false, message: "You can only have one virtual address. Remove your current address before creating another." },
+        { status: 409 }
+      );
+    }
+
     const warehouse = await warehouses.findOne({
       _id: new ObjectId(warehouseId)
     });
@@ -31,6 +39,16 @@ export async function POST(req) {
     if (!warehouse) {
       console.log(warehouse+" "+warehouseId)
       return NextResponse.json({ success: false, message: "Warehouse not found" }, { status: 404 });
+    }
+
+    const warehouseRacks = await racks.find({ warehouseId: warehouse._id }).toArray();
+    const rackIds = warehouseRacks.map((rack) => rack._id);
+
+    if (rackIds.length === 0) {
+      return NextResponse.json(
+        { success: false, message: "This warehouse has no storage inventory configured yet." },
+        { status: 400 }
+      );
     }
 
     let lockerDoc = null;
@@ -41,6 +59,7 @@ export async function POST(req) {
 
       lockerDoc = await lockers.findOneAndUpdate(
         {
+          shelfId: { $in: await shelves.distinct('_id', { rackId: { $in: rackIds }, isFullShelfBooked: false }) },
           isBooked: false,
           // ✅ IMPORTANT FIX (if you add warehouseId later)
           // warehouseId: new ObjectId(warehouseId)
@@ -74,7 +93,7 @@ export async function POST(req) {
 
       // 1. Find candidate shelves
       const shelvesList = await shelves
-        .find({ isFullShelfBooked: false })
+        .find({ rackId: { $in: rackIds }, isFullShelfBooked: false })
         .toArray();
 
       let selectedShelf = null;
@@ -221,148 +240,34 @@ export async function GET(req) {
 
 export async function DELETE(req) {
   try {
-
-    // =========================
-    // AUTH
-    // =========================
-
     const token = req.cookies.get("token")?.value;
-
     if (!token) {
-      return NextResponse.json(
-        { success: false, message: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
     }
 
     const user = verifyTokenAndUser(token);
-
     if (!user) {
-      return NextResponse.json(
-        { success: false, message: "Invalid token" },
-        { status: 401 }
-      );
+      return NextResponse.json({ success: false, message: "Invalid token" }, { status: 401 });
     }
 
-    // =========================
-    // BODY
-    // =========================
-
-    const { addressId } = await req.json();
-
-    if (!ObjectId.isValid(addressId)) {
-      return NextResponse.json(
-        { success: false, message: "Invalid address ID" },
-        { status: 400 }
-      );
+    const { searchParams } = new URL(req.url);
+    const addressId = searchParams.get("id");
+    if (!addressId || !ObjectId.isValid(addressId)) {
+      return NextResponse.json({ success: false, message: "Invalid address" }, { status: 400 });
     }
-
-    // =========================
-    // COLLECTIONS
-    // =========================
 
     const addresses = await getCollection("addresses");
-    const lockers = await getCollection("lockers");
-    const shelves = await getCollection("shelves");
-
-    // =========================
-    // FIND ADDRESS
-    // =========================
-
-    const address = await addresses.findOne({
+    const result = await addresses.deleteOne({
       _id: new ObjectId(addressId),
-      userId: user.userId
+      userId: user.userId,
     });
 
-    if (!address) {
-      return NextResponse.json(
-        { success: false, message: "Address not found" },
-        { status: 404 }
-      );
+    if (result.deletedCount === 0) {
+      return NextResponse.json({ success: false, message: "Address not found" }, { status: 404 });
     }
 
-    // =========================
-    // LOCKER BOOKING
-    // =========================
-
-    if (address.bookingType === "LOCKER") {
-
-      await lockers.updateOne(
-        {
-          _id: address.lockerId
-        },
-        {
-          $set: {
-            isBooked: false
-          },
-          $unset: {
-            bookedBy: "",
-            bookedAt: ""
-          }
-        }
-      );
-    }
-
-    // =========================
-    // SHELF BOOKING
-    // =========================
-
-    if (address.bookingType === "SHELF") {
-
-      // Free shelf
-      await shelves.updateOne(
-        {
-          _id: address.shelfId
-        },
-        {
-          $set: {
-            isFullShelfBooked: false
-          },
-          $unset: {
-            bookedBy: "",
-            bookedAt: ""
-          }
-        }
-      );
-
-      // Free all lockers inside shelf
-      await lockers.updateMany(
-        {
-          shelfId: address.shelfId
-        },
-        {
-          $set: {
-            isBooked: false
-          },
-          $unset: {
-            bookedBy: "",
-            bookedAt: ""
-          }
-        }
-      );
-    }
-
-    // =========================
-    // DELETE ADDRESS
-    // =========================
-
-    await addresses.deleteOne({
-      _id: address._id
-    });
-
-    return NextResponse.json({
-      success: true,
-      message: "Virtual address deleted successfully"
-    });
-
+    return NextResponse.json({ success: true });
   } catch (error) {
-
-    return NextResponse.json(
-      {
-        success: false,
-        message: error.message
-      },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: false, message: error.message }, { status: 500 });
   }
 }

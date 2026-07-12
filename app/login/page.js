@@ -73,7 +73,7 @@ export default function LoginPage() {
             <Package className="h-12 w-12 text-primary" />
           </div>
           <h1 className="text-3xl font-bold">Welcome Back</h1>
-          <p className="text-muted-foreground mt-2">Login to your Shoppnshipp account</p>
+          <p className="text-muted-foreground mt-2">Log in to The Parcelo</p>
         </div>
 
         <Card>

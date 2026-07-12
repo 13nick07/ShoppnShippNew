@@ -83,7 +83,7 @@ export default function RegisterPage() {
             <Package className="h-12 w-12 text-primary" />
           </div>
           <h1 className="text-3xl font-bold">Get Started</h1>
-          <p className="text-muted-foreground mt-2">Create your Shoppnshipp account</p>
+          <p className="text-muted-foreground mt-2">Create an account with The Parcelo</p>
         </div>
 
         <Card>

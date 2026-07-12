@@ -7,7 +7,7 @@ import { Toaster } from '@/components/ui/toaster';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata = {
-  title: 'Shoppnshipp - Shop from ANY country. Ship to EVERY country.',
+  title: 'The Parcelo - Shop from ANY country. Ship to EVERY country.',
   description: 'Global personal shopping & international forwarding platform. Get virtual addresses worldwide, consolidate packages, and ship anywhere.',
 };
 

@@ -32,7 +32,7 @@ export default function ForBusinessesPage() {
   return (
     <div className="container mx-auto px-4 py-16">
       <div className="text-center mb-16">
-        <h1 className="text-5xl font-bold mb-4">Shoppnshipp for Businesses</h1>
+        <h1 className="text-5xl font-bold mb-4">The Parcelo for Businesses</h1>
         <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
           Enterprise solutions for companies shipping globally
         </p>

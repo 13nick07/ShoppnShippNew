@@ -11,7 +11,7 @@ export default function Footer() {
           <div>
             <div className="flex items-center space-x-2 mb-4">
               <Package className="h-6 w-6 text-primary" />
-              <span className="text-xl font-bold">Shoppnshipp</span>
+              <span className="text-xl font-bold">The Parcelo</span>
             </div>
             <p className="text-sm text-muted-foreground">
               Shop from ANY country. Ship to EVERY country.
@@ -58,7 +58,7 @@ export default function Footer() {
         </div>
 
         <div className="border-t mt-8 pt-8 text-center text-sm text-muted-foreground">
-          <p>&copy; 2025 Shoppnshipp. All rights reserved.</p>
+          <p>&copy; 2025 The Parcelo. All rights reserved.</p>
         </div>
       </div>
     </footer>

@@ -376,6 +376,12 @@ export async function POST(request, { params }) {
       }
 
       const addressesCol = await getCollection('virtualAddresses');
+      const existingAddress = await addressesCol.findOne({ userId: user.userId });
+
+      if (existingAddress) {
+        return jsonResponse({ error: 'You can only have one virtual address. Remove your current address before creating another.' }, 409);
+      }
+
       const warehousesCol = await getCollection('warehouses');
       const warehouse = await warehousesCol.findOne({ code: warehouseCode });
 
@@ -660,6 +666,23 @@ export async function DELETE(request, { params }) {
 
   try {
     const user = getUserFromRequest(request);
+
+    // Delete a user's virtual address
+    if (path.startsWith('addresses/')) {
+      if (!user) {
+        return jsonResponse({ error: 'Unauthorized' }, 401);
+      }
+
+      const addressId = path.split('/').pop();
+      const addressesCol = await getCollection('virtualAddresses');
+      const result = await addressesCol.deleteOne({ id: addressId, userId: user.userId });
+
+      if (result.deletedCount === 0) {
+        return jsonResponse({ error: 'Address not found' }, 404);
+      }
+
+      return jsonResponse({ success: true });
+    }
 
     // Admin: Delete Package
     if (path.startsWith('admin/packages/')) {
