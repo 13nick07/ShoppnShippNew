@@ -24,6 +24,14 @@ export async function POST(req) {
     const lockers = await getCollection("lockers");
     const addresses = await getCollection("addresses");
 
+    const existingAddress = await addresses.findOne({ userId: user.userId });
+    if (existingAddress) {
+      return NextResponse.json(
+        { success: false, message: "You can only have one virtual address. Remove your current address before creating another." },
+        { status: 409 }
+      );
+    }
+
     const warehouse = await warehouses.findOne({
       _id: new ObjectId(warehouseId)
     });
@@ -31,6 +39,16 @@ export async function POST(req) {
     if (!warehouse) {
       console.log(warehouse+" "+warehouseId)
       return NextResponse.json({ success: false, message: "Warehouse not found" }, { status: 404 });
+    }
+
+    const warehouseRacks = await racks.find({ warehouseId: warehouse._id }).toArray();
+    const rackIds = warehouseRacks.map((rack) => rack._id);
+
+    if (rackIds.length === 0) {
+      return NextResponse.json(
+        { success: false, message: "This warehouse has no storage inventory configured yet." },
+        { status: 400 }
+      );
     }
 
     let lockerDoc = null;
@@ -41,6 +59,7 @@ export async function POST(req) {
 
       lockerDoc = await lockers.findOneAndUpdate(
         {
+          shelfId: { $in: await shelves.distinct('_id', { rackId: { $in: rackIds }, isFullShelfBooked: false }) },
           isBooked: false,
           // ✅ IMPORTANT FIX (if you add warehouseId later)
           // warehouseId: new ObjectId(warehouseId)
@@ -74,7 +93,7 @@ export async function POST(req) {
 
       // 1. Find candidate shelves
       const shelvesList = await shelves
-        .find({ isFullShelfBooked: false })
+        .find({ rackId: { $in: rackIds }, isFullShelfBooked: false })
         .toArray();
 
       let selectedShelf = null;
@@ -216,5 +235,39 @@ export async function GET(req) {
       { success: false, message: error.message },
       { status: 500 }
     );
+  }
+}
+
+export async function DELETE(req) {
+  try {
+    const token = req.cookies.get("token")?.value;
+    if (!token) {
+      return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
+    }
+
+    const user = verifyTokenAndUser(token);
+    if (!user) {
+      return NextResponse.json({ success: false, message: "Invalid token" }, { status: 401 });
+    }
+
+    const { searchParams } = new URL(req.url);
+    const addressId = searchParams.get("id");
+    if (!addressId || !ObjectId.isValid(addressId)) {
+      return NextResponse.json({ success: false, message: "Invalid address" }, { status: 400 });
+    }
+
+    const addresses = await getCollection("addresses");
+    const result = await addresses.deleteOne({
+      _id: new ObjectId(addressId),
+      userId: user.userId,
+    });
+
+    if (result.deletedCount === 0) {
+      return NextResponse.json({ success: false, message: "Address not found" }, { status: 404 });
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    return NextResponse.json({ success: false, message: error.message }, { status: 500 });
   }
 }

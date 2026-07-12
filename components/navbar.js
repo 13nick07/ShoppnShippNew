@@ -62,7 +62,7 @@ export default function Navbar() {
         <div className="flex h-16 items-center justify-between">
           <Link href="/" className="flex items-center space-x-2">
             <Package className="h-6 w-6 text-primary" />
-            <span className="text-xl font-bold">Shoppnshipp</span>
+            <span className="text-xl font-bold">The Parcelo</span>
           </Link>
 
           {/* Desktop Navigation */}

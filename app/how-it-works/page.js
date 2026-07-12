@@ -60,7 +60,7 @@ export default function HowItWorksPage() {
   return (
     <div className="container mx-auto px-4 py-16">
       <div className="text-center mb-16">
-        <h1 className="text-5xl font-bold mb-4">How Shoppnshipp Works</h1>
+        <h1 className="text-5xl font-bold mb-4">How The Parcelo Works</h1>
         <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
           Start shipping globally in 5 simple steps
         </p>

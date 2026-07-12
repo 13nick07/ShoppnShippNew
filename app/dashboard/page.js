@@ -43,7 +43,7 @@ export default function DashboardPage() {
   const [calcLoading, setCalcLoading] = useState(false);
   const [shippingRates, setShippingRates] = useState([]);
   const [bookingType, setBookingType] = useState("LOCKER");
-  const [deletingId, setDeletingId] = useState(null); // placeholder, unused without backend
+  const [deletingId, setDeletingId] = useState(null);
 
   const [warehouses, setWarehouses] = useState([]);
   const [virtualAddressCount, setVirtualAddressCount] = useState(0);
@@ -100,11 +100,11 @@ export default function DashboardPage() {
           warehousesRes.json(),
         ]);
 
-      setAddresses(addressesData.data || []);
+      setAddresses(addressesData.addresses || addressesData.data || []);
       setPackages(packagesData.packages || []);
       setShipments(shipmentsData.shipments || []);
-      setCountries(countriesData.data || []);
-      setWarehouses(warehousesData.data || []);
+      setCountries(countriesData.countries || countriesData.data || []);
+      setWarehouses(warehousesData.warehouses || warehousesData.data || []);
     } catch (error) {
       console.error('Error loading dashboard data:', error);
       toast({ title: 'Error', description: 'Failed to load dashboard data', variant: 'destructive' });
@@ -113,17 +113,28 @@ export default function DashboardPage() {
     }
   };
 
-  const selectedCountryData = countries.find((c) => c.code === selectedCountry);
+  const availableCities = [...new Set(
+    warehouses
+      .filter((warehouse) => warehouse.countryCode === selectedCountry)
+      .map((warehouse) => warehouse.city)
+      .filter(Boolean)
+  )];
 
   const filteredWarehouses = warehouses.filter(
     (w) => w.countryCode === selectedCountry && w.city === selectedCity
   );
 
   const handleCreateVirtualAddress = async () => {
+    if (addresses.length >= 1) {
+      toast({ title: 'Address already active', description: 'Remove your current virtual address before creating another.', variant: 'destructive' });
+      return;
+    }
+
     try {
       const response = await fetch("/api/addresses", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: 'include',
         body: JSON.stringify({ warehouseId: selectedWarehouse, bookingType }),
       });
 
@@ -137,6 +148,28 @@ export default function DashboardPage() {
       setSelectedWarehouse("");
     } catch (error) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
+    }
+  };
+
+  const handleDeleteAddress = async (address) => {
+    if (!window.confirm('Remove this virtual address? You can create a new one afterwards.')) return;
+
+    const addressId = address._id;
+    setDeletingId(addressId);
+    try {
+      const response = await fetch(`/api/addresses?id=${encodeURIComponent(addressId)}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || 'Failed to remove address');
+
+      setAddresses((previous) => previous.filter((item) => item._id !== addressId));
+      toast({ title: 'Address removed', description: 'You can now create a new virtual address.' });
+    } catch (error) {
+      toast({ title: 'Unable to remove address', description: error.message, variant: 'destructive' });
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -244,7 +277,7 @@ export default function DashboardPage() {
             {/* Country */}
             <div className="space-y-2">
               <Label>Country</Label>
-              <Select value={selectedCountry} onValueChange={(val) => { setSelectedCountry(val); setSelectedCity(""); setSelectedWarehouse(""); }}>
+              <Select value={selectedCountry} onValueChange={(val) => { setSelectedCountry(val); setSelectedCity(""); setSelectedWarehouse(""); }} disabled={addresses.length >= 1}>
                 <SelectTrigger className="w-full"><SelectValue placeholder="Select country" /></SelectTrigger>
                 <SelectContent>
                   {countries.map((country) => (
@@ -257,10 +290,10 @@ export default function DashboardPage() {
             {/* City */}
             <div className="space-y-2">
               <Label>City</Label>
-              <Select value={selectedCity} onValueChange={(val) => { setSelectedCity(val); setSelectedWarehouse(""); }} disabled={!selectedCountry}>
+              <Select value={selectedCity} onValueChange={(val) => { setSelectedCity(val); setSelectedWarehouse(""); }} disabled={!selectedCountry || addresses.length >= 1}>
                 <SelectTrigger className="w-full"><SelectValue placeholder="Select city" /></SelectTrigger>
                 <SelectContent>
-                  {selectedCountryData?.cities?.map((city) => (
+                  {availableCities.map((city) => (
                     <SelectItem key={city} value={city}>{city}</SelectItem>
                   ))}
                 </SelectContent>
@@ -270,7 +303,7 @@ export default function DashboardPage() {
             {/* Warehouse */}
             <div className="space-y-2">
               <Label>Warehouse</Label>
-              <Select value={selectedWarehouse} onValueChange={(val) => setSelectedWarehouse(val)} disabled={!selectedCity}>
+              <Select value={selectedWarehouse} onValueChange={(val) => setSelectedWarehouse(val)} disabled={!selectedCity || addresses.length >= 1}>
                 <SelectTrigger className="w-full"><SelectValue placeholder="Select warehouse" /></SelectTrigger>
                 <SelectContent>
                   {filteredWarehouses.length > 0 ? (
@@ -287,7 +320,7 @@ export default function DashboardPage() {
             {/* Storage Type */}
             <div className="space-y-2">
               <Label>Storage Type</Label>
-              <RadioGroup value={bookingType} onValueChange={(val) => setBookingType(val)} className="flex flex-col gap-3">
+              <RadioGroup value={bookingType} onValueChange={(val) => setBookingType(val)} disabled={addresses.length >= 1} className="flex flex-col gap-3">
                 <HoverCard>
                   <HoverCardTrigger asChild>
                     <div className="flex items-center space-x-2 cursor-pointer">
@@ -324,8 +357,8 @@ export default function DashboardPage() {
 
             {/* Button */}
             <div className="space-y-2">
-              <Button className="w-full" onClick={handleCreateVirtualAddress} disabled={!selectedWarehouse || !bookingType}>
-                Get Virtual Address
+              <Button className="w-full" onClick={handleCreateVirtualAddress} disabled={!selectedWarehouse || !bookingType || addresses.length >= 1}>
+                {addresses.length >= 1 ? 'One Address Active' : 'Get Virtual Address'}
               </Button>
             </div>
           </div>
@@ -334,7 +367,7 @@ export default function DashboardPage() {
           <Card>
             <CardHeader>
               <CardTitle>Virtual Addresses</CardTitle>
-              <CardDescription>Your international shipping addresses</CardDescription>
+              <CardDescription>One virtual address is allowed per account.</CardDescription>
             </CardHeader>
             <CardContent>
               {addresses.length === 0 ? (
@@ -372,8 +405,11 @@ export default function DashboardPage() {
                             <Button
                               size="sm"
                               variant="ghost"
-                              className="h-9 w-9 p-0 rounded-full text-gray-500 text-lg font-bold hover:text-destructive hover:bg-destructive/10 transition-colors"
-                              onClick={() => setAddresses((prev) => prev.filter((a) => a.id !== address._id))}
+                              className="h-9 w-9 rounded-full p-0 text-gray-500 hover:bg-destructive/10 hover:text-destructive"
+                              onClick={() => handleDeleteAddress(address)}
+                              disabled={deletingId === address._id}
+                              aria-label="Remove virtual address"
+                              title="Remove virtual address"
                             >
                               ✕
                             </Button>
