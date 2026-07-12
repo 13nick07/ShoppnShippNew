@@ -165,13 +165,13 @@ export async function POST(req) {
     const userCode = `${warehouse.warehouseCode}${rack.code}${shelfDoc.code}${lockerDoc?.code || ""}`;
 
     // ✅ FIXED STRING TEMPLATE
-    const addressLine = `${warehouse.city}, ${warehouse.country} - ${userCode}`;
+    const addressLine = `${warehouse.addressLine} - ${userCode}`;
 
     const newAddress = {
       userId: user.userId,
       userEmail: user.email,
       warehouseId: warehouse._id,
-      warehouse: { country: warehouse.country, city: warehouse.city, },
+      warehouse: { country: warehouse.country, city: warehouse.city, name: warehouse.name },
       rackId: rack._id,
       shelfId: shelfDoc._id,
       lockerId: lockerDoc?._id || null,

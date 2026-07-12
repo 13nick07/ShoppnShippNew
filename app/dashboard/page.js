@@ -388,9 +388,9 @@ export default function DashboardPage() {
                                 Code: {address.userCode}
                               </span>
                             </div>
-                            <p className="font-mono text-sm">{address.addressLine}</p>
+                            <p className="font-mono text-sm">{address.warehouse?.name}</p>
                             <p className="text-sm text-muted-foreground">
-                              {address.warehouse?.city}, {address.warehouse?.country}
+                              {address.addressLine}
                             </p>
                           </div>
 
