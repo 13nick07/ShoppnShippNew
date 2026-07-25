@@ -41,7 +41,7 @@ export default function ContactPage() {
           <CardContent className="pt-6 text-center">
             <Mail className="h-8 w-8 mx-auto mb-4 text-primary" />
             <h3 className="font-semibold mb-2">Email</h3>
-            <p className="text-sm text-muted-foreground">support@shoppnshipp.com</p>
+            <p className="text-sm text-muted-foreground">feedback@theparcelo.com</p>
           </CardContent>
         </Card>
         <Card>
