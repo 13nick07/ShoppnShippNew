@@ -78,7 +78,7 @@ export default function FAQPage() {
         <p className="text-muted-foreground mb-4">
           Our support team is here to help
         </p>
-        <p className="text-sm">Email: support@shoppnshipp.com</p>
+        <p className="text-sm">Email: info@theparcelo.com</p>
       </div>
     </div>
   );
