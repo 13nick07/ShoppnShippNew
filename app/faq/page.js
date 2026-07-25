@@ -10,8 +10,8 @@ import {
 export default function FAQPage() {
   const faqs = [
     {
-      question: 'How does Shoppnshipp work?',
-      answer: 'Shoppnshipp provides you with virtual addresses in multiple countries. You can use these addresses to shop from local stores, and we receive, store, and forward your packages to anywhere in the world.',
+      question: 'How does The Parcelo work?',
+      answer: 'The Parcelo provides you with virtual addresses in multiple countries. You can use these addresses to shop from local stores, and we receive, store, and forward your packages to anywhere in the world.',
     },
     {
       question: 'What countries do you support?',
@@ -56,7 +56,7 @@ export default function FAQPage() {
       <div className="text-center mb-16">
         <h1 className="text-5xl font-bold mb-4">Frequently Asked Questions</h1>
         <p className="text-xl text-muted-foreground">
-          Find answers to common questions about Shoppnshipp
+          Find answers to common questions about The Parcelo
         </p>
       </div>
 

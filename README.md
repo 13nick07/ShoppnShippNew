@@ -1,8 +1,8 @@
-# Shoppnshipp - Global Shopping & Shipping Platform
+# The Parcelo - Global Shopping & Shipping Platform
 
 ## 🌍 Overview
 
-Shoppnshipp is a complete global personal shopping and international forwarding platform built with Next.js and MongoDB. The platform allows users to shop from any country and ship to any country using virtual addresses in multiple locations worldwide.
+The Parcelo is a complete global personal shopping and international forwarding platform built with Next.js and MongoDB. The platform allows users to shop from any country and ship to any country using virtual addresses in multiple locations worldwide.
 
 ## ✨ Features
 

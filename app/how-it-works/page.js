@@ -8,17 +8,17 @@ export default function HowItWorksPage() {
     {
       number: '01',
       title: 'Sign Up & Get Your Addresses',
-      description: 'Create a free account and instantly receive virtual addresses in multiple countries. Each address is unique to you.',
+      description: 'Create a free account and instantly receive virtual addresses in India. Now lets begin the Shopping.',
       details: [
         'Instant address activation',
         'Unique suite number for identification',
-        'Multiple country options available',
+        'Multiple warehouse options available',
       ],
     },
     {
       number: '02',
       title: 'Shop from Any Store',
-      description: 'Use your virtual addresses to shop from any international online store. Shop as if you were a local!',
+      description: 'Use your virtual addresses to shop from any Indian online store. Shop as if you were a local!',
       details: [
         'Works with all major retailers',
         'No restrictions on store selection',
@@ -60,7 +60,7 @@ export default function HowItWorksPage() {
   return (
     <div className="container mx-auto px-4 py-16">
       <div className="text-center mb-16">
-        <h1 className="text-5xl font-bold mb-4">How Shoppnshipp Works</h1>
+        <h1 className="text-5xl font-bold mb-4">How The Parcelo Works</h1>
         <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
           Start shipping globally in 5 simple steps
         </p>

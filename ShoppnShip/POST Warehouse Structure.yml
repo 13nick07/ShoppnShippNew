@@ -5,7 +5,7 @@ info:
 
 http:
   method: post
-  url: http://localhost:3000/api/warehouses
+  url: http://localhost:3000/api/warehouses/init
   headers:
     - name: Content-Type
       value: application/json
@@ -13,13 +13,10 @@ http:
     type: json
     data: |-
       {
-        "warehouseCode": "1",
-        "name": "Ludhiana Main Warehouse",
-        "countryCode": "IN",
-        "country": "INDIA",
-        "city": "Ludhiana",
-        "addressLine": "ABCD, Makhan Chowk, Ludhiana",
-        "postalCode": "176009"
+        "warehouseId": "69f47bfe897adc9c0ff42e4d",
+        "racks": 1,
+        "shelvesPerRack": 2,
+        "lockersPerShelf": 3
       }
   auth: inherit
 
