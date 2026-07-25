@@ -43,7 +43,7 @@ export default function Footer() {
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li className="flex items-center gap-2">
                 <Mail className="h-4 w-4" />
-                support@shoppnshipp.com
+                feedback@theparcelo.com
               </li>
               <li className="flex items-center gap-2">
                 <Phone className="h-4 w-4" />
